@@ -20,4 +20,11 @@ export const ProfileScreenStyles = ({theme}: ProfileScreenStyleProps) =>
       color: Colors[`${theme}_on_bgd_srf_1`],
       textAlign: 'center',
     },
+    text: {
+      width: '100%',
+      fontSize: 20,
+      fontWeight: '600',
+      color: Colors[`${theme}_on_bgd_srf_2`],
+      textAlign: 'center',
+    },
   });

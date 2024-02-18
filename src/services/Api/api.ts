@@ -3,7 +3,7 @@ import {ApiResources} from '../../consts/ApiResources.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: ApiResources.API_URL,
+  baseURL: ApiResources.API_URL_DEV,
   headers: {
     'Content-Type': 'application/json',
     Authorization: 'Bearer',

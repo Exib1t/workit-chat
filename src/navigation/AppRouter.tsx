@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import LoginScreen from '../components/screens/LoginScreen/LoginScreen.tsx';
 import {
@@ -17,6 +17,10 @@ import useGetTheme from '../helpers/themeHelper.ts';
 import {useAppDispatch, useAppSelector} from '../store';
 import ProfileScreen from '../components/screens/ProfileScreen/ProfileScreen.tsx';
 import {refreshThunk} from '../store/reducers/auth/authThunks.ts';
+import {fetchUserById} from '../store/reducers/user/userThunks.ts';
+import {clearUser} from '../store/reducers/user/userSlice.ts';
+import {setToken} from '../store/reducers/auth/authSlice.ts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 
@@ -24,16 +28,41 @@ const AppRouter = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const theme = useGetTheme();
   const dispatch = useAppDispatch();
-
-  const {isLoading, token, isAuthenticated} = useAppSelector(
+  const [isLoaded, setIsLoaded] = useState(false);
+  const {isLoading, token, isAuthenticated, id} = useAppSelector(
     state => state.auth,
   );
 
+  const refreshToken = useCallback(async () => {
+    const asyncToken = await AsyncStorage.getItem('token');
+    if (asyncToken) {
+      dispatch(setToken(asyncToken));
+    } else {
+      setIsLoaded(true);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    refreshToken();
+  }, [dispatch, refreshToken]);
+
   useEffect(() => {
     if (token) {
-      dispatch(refreshThunk({token}));
+      dispatch(refreshThunk({token}))
+        .unwrap()
+        .finally(() => {
+          setIsLoaded(true);
+        });
     }
   }, [dispatch, token]);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchUserById(id));
+    } else {
+      dispatch(clearUser());
+    }
+  }, [dispatch, id]);
 
   const renderNonAuthenticatedRoutes = () => {
     return (
@@ -67,7 +96,7 @@ const AppRouter = () => {
           <Stack.Navigator
             initialRouteName={token ? ROUTES.profile : ROUTES.signIn}
             screenOptions={{headerShown: false}}>
-            {isAuthenticated
+            {isLoaded && isAuthenticated
               ? renderAuthenticatedRoutes()
               : renderNonAuthenticatedRoutes()}
           </Stack.Navigator>

@@ -11,18 +11,19 @@ import {
   REHYDRATE,
 } from 'redux-persist/es/constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import UserSlice from './reducers/user/userSlice.ts';
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
 };
 
-const rootReducer = combineReducers({auth: AuthSlice});
+const rootReducer = combineReducers({auth: AuthSlice, user: UserSlice});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {auth: AuthSlice, user: UserSlice},
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
